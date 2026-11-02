@@ -1,0 +1,22 @@
+{
+  "name": "shortplanet-stars",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute shortplanet-stars --local --file=schema.sql",
+    "db:remote": "wrangler d1 execute shortplanet-stars --remote --file=schema.sql",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.13.16"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261102.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5",
+    "wrangler": "^4.156.1"
+  }
+}
