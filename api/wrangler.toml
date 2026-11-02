@@ -2,13 +2,16 @@ name = "shortplanet-stars"
 main = "src/index.ts"
 compatibility_date = "2026-09-01"
 
+# theshortplanet.uk is on Cloudflare, so deploying creates this DNS record and its certificate
+routes = [{ pattern = "stars.theshortplanet.uk", custom_domain = true }]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "shortplanet-stars"
 database_id = "00000000-0000-0000-0000-000000000000"   # replace with the id printed by: npx wrangler d1 create shortplanet-stars
 
 [vars]
-ALLOWED_ORIGINS = "https://theshortplanet.uk,https://www.theshortplanet.uk,http://localhost:8765,http://127.0.0.1:8765"
+ALLOWED_ORIGINS = "https://theshortplanet.uk,https://www.theshortplanet.uk,https://shortplanet3058.github.io,http://localhost:8765,http://127.0.0.1:8765"
 
 # Secrets, set once with `npx wrangler secret put <NAME>` (and in .dev.vars for local runs):
 #   ADMIN_KEY   the key you type into the site's #admin panel

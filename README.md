@@ -79,15 +79,32 @@ cd api && npm test
    cd api && npm run deploy
    ```
 
-5. Give it its address. If theshortplanet.uk's DNS is on Cloudflare, add a custom domain `stars.theshortplanet.uk` to the
-   Worker (Workers & Pages > shortplanet-stars > Settings > Domains). Otherwise use the `*.workers.dev` address Wrangler
-   printed, and put it in `site/index.html`, in `<meta name="star-api">`.
+   The deploy also gives the Worker its address, `stars.theshortplanet.uk` (the `routes` line in `wrangler.toml`):
+   theshortplanet.uk's DNS is on Cloudflare, so the record and its certificate are created for you. The site already
+   points there, in `<meta name="star-api">` in `site/index.html`.
 
 ### The site (GitHub Pages)
 
-1. Push this repository to GitHub, then in Settings > Pages choose "GitHub Actions" as the source. The workflow in
-   `.github/workflows/pages.yml` publishes `site/` on every push to `main`.
-2. Custom domain: add a `site/CNAME` file containing `theshortplanet.uk`, set the domain in Settings > Pages, and point
-   the DNS at GitHub Pages (four `A` records for the bare domain, or a `CNAME` to `<user>.github.io` for a subdomain).
-   Tick "Enforce HTTPS" once the certificate is issued.
-3. If the site lives on another address, add it to `ALLOWED_ORIGINS` in `api/wrangler.toml` and deploy the API again.
+The repository is https://github.com/ShortPlanet3058/shortplanet. Pages builds from GitHub Actions: the workflow in
+`.github/workflows/pages.yml` publishes `site/` on every push to `main`.
+
+The site lives at the bare domain `theshortplanet.uk`. In Cloudflare's DNS for theshortplanet.uk, these records point it
+at GitHub Pages. Keep them "DNS only" (grey cloud), so GitHub can issue the site's HTTPS certificate:
+
+| Type | Name | Content |
+|---|---|---|
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| AAAA | `@` | `2606:50c0:8000::153` |
+| AAAA | `@` | `2606:50c0:8001::153` |
+| AAAA | `@` | `2606:50c0:8002::153` |
+| AAAA | `@` | `2606:50c0:8003::153` |
+| CNAME | `www` | `shortplanet3058.github.io` |
+
+Then set the custom domain in the repository's Settings > Pages (with Actions deploys there is no `CNAME` file; GitHub
+ignores it), and tick "Enforce HTTPS" once the certificate is issued. The `shortplanet3058.github.io/shortplanet` address
+keeps working and redirects there.
+
+If the site ever moves to another address, add it to `ALLOWED_ORIGINS` in `api/wrangler.toml` and deploy the API again.
