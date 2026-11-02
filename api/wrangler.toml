@@ -8,7 +8,7 @@ routes = [{ pattern = "stars.theshortplanet.uk", custom_domain = true }]
 [[d1_databases]]
 binding = "DB"
 database_name = "shortplanet-stars"
-database_id = "00000000-0000-0000-0000-000000000000"   # replace with the id printed by: npx wrangler d1 create shortplanet-stars
+database_id = "8189b003-a4a5-48cc-9979-c1ca416b4295"
 
 [vars]
 ALLOWED_ORIGINS = "https://theshortplanet.uk,https://www.theshortplanet.uk,https://shortplanet3058.github.io,http://localhost:8765,http://127.0.0.1:8765"
