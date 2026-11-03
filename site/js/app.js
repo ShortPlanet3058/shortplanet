@@ -74,6 +74,7 @@ document.addEventListener("click", (e) => {
   if (go) { goTo(focus() + Number(go.dataset.go)); walked(); }
   const lb = e.target.closest("[data-lang]");
   if (lb) setLang(lb.dataset.lang);
+  if (e.target.closest("[data-theme-toggle]")) nextTheme();
   const pl = e.target.closest("[data-place]");
   if (pl) { goTo(Number(pl.dataset.place), true); walked(); }
   const cp = e.target.closest("[data-copy]");
@@ -96,7 +97,7 @@ function renderPlain() {
   plain.innerHTML = `<div class="plain-inner">
     <div class="plain-top">
       <div><span class="label">ShortPlanet</span><h1>Finn Vignon</h1><p class="lede">${t("lede")} ${esc(home.body)}</p></div>
-      <div class="plain-actions"><button class="btn primary" type="button" id="backBtn">${t("back")}</button>${langSwitch()}</div>
+      <div class="plain-actions"><button class="btn primary" type="button" id="backBtn">${t("back")}</button>${themeSwitch()}${langSwitch()}</div>
     </div>
     <section><span class="label">${t("contact")}</span>${linkList(home.links)}${emailRow()}</section>
     ${groups.map(([g, keys]) => `<section><h2>${g}</h2>${keys.flatMap((k) => PL.find((p) => p.key === k).projects).map(projHTML).join("")}</section>`).join("")}
@@ -1129,6 +1130,27 @@ function langSwitch() {
   return `<div class="lang" role="group" aria-label="Language · Langue">${["en", "fr"].map((l) =>
     `<button type="button" data-lang="${l}" lang="${l}" aria-pressed="${l === lang}">${l.toUpperCase()}</button>`).join("")}</div>`;
 }
+// The theme follows the device by default. The button steps from automatic to the opposite of what is
+// showing (so the first press always changes something), then to the other one, then back to automatic.
+// The choice is applied before the page draws, by a line in index.html, so a forced theme never flashes.
+const systemDark = matchMedia("(prefers-color-scheme: dark)");
+let theme = ["light", "dark"].includes(read("shortplanet-theme")) ? read("shortplanet-theme") : "auto";
+const THEME_COLOR = { light: "#bccbeb", dark: "#060919" };
+function applyTheme() {
+  if (theme === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = theme;
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+    m.content = THEME_COLOR[theme === "auto" ? (m.media.includes("dark") ? "dark" : "light") : theme];
+  });
+  const label = t(theme === "auto" ? "themeAuto" : theme === "light" ? "themeLight" : "themeDark");
+  document.querySelectorAll("[data-theme-toggle]").forEach((b) => { b.dataset.mode = theme; b.setAttribute("aria-label", label); b.title = label; });
+}
+function nextTheme() {
+  const seen = systemDark.matches ? "dark" : "light", other = seen === "dark" ? "light" : "dark";
+  theme = theme === "auto" ? other : theme === other ? seen : "auto";
+  keep("shortplanet-theme", theme === "auto" ? null : theme);
+  applyTheme();
+}
+const themeSwitch = () => document.querySelector(".top [data-theme-toggle]").outerHTML;
 function setLang(l) {
   const refocus = plain.contains(document.activeElement);
   lang = l; PL = PLACES.map(loc);
@@ -1139,7 +1161,7 @@ function setLang(l) {
   document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
   document.querySelectorAll("[data-i18n-title]").forEach((el) => (el.title = t(el.dataset.i18nTitle)));
   document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
-  nameDots(); showLedger(); setStarMsg(starMsgKey); setView(zView);
+  nameDots(); showLedger(); setStarMsg(starMsgKey); setView(zView); applyTheme();
   starBtn.textContent = t(starMoved ? "moveStar" : "star");
   shown = -1; renderCard(focus()); renderMod();
   if (!plain.hidden) { renderPlain(); if (refocus) plain.querySelector(`[data-lang="${l}"]`)?.focus(); }
