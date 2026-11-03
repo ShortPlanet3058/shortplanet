@@ -23,8 +23,16 @@ type C = Context<{ Bindings: Env }>;
 type Star = { id: string; a: number; h: number; name: string; org: string; word: string; lit: number; hidden?: number };
 
 const WRITES_PER_HOUR = 12;
+const ADMIN_FAILURES_PER_HOUR = 10;
 const TAU = Math.PI * 2;
 const PUBLIC = "id, a, h, name, org, word, lit";
+// Two stars may never sit on top of each other. The page already moves a new star to a free spot; this is the
+// backstop, measured on a plane where a star at height h sits 1 + h from the centre, so it holds on any screen.
+const MIN_GAP = .03;
+const gap = (a1: number, h1: number, a2: number, h2: number) => {
+  const r1 = 1 + h1, r2 = 1 + h2;
+  return Math.sqrt(Math.max(0, r1 * r1 + r2 * r2 - 2 * r1 * r2 * Math.cos(a1 - a2)));
+};
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -55,15 +63,24 @@ async function sameSecret(given: string, expected: string) {
 function bearer(c: C) {
   return /^Bearer ([A-Za-z0-9_-]{20,200})$/.exec(c.req.header("Authorization") ?? "")?.[1] ?? null;
 }
-async function allowWrite(c: C) {
+// Counts what one address does in the current hour, per kind ("write", "admin"), by a salted hash of the address.
+async function attemptKey(c: C, kind: string) {
   const hour = Math.floor(Date.now() / 3_600_000);
-  const key = await sha256(`${c.env.HASH_SALT ?? ""}|${c.req.header("CF-Connecting-IP") ?? "local"}|${hour}`);
+  return { hour, key: await sha256(`${c.env.HASH_SALT ?? ""}|${kind}|${c.req.header("CF-Connecting-IP") ?? "local"}|${hour}`) };
+}
+async function bump(c: C, kind: string) {
+  const { hour, key } = await attemptKey(c, kind);
   const row = await c.env.DB.prepare(
     "INSERT INTO attempts (key, count, until) VALUES (?, 1, ?) ON CONFLICT(key) DO UPDATE SET count = count + 1 RETURNING count",
   ).bind(key, (hour + 2) * 3_600_000).first<{ count: number }>();
   if (Math.random() < .05) await c.env.DB.prepare("DELETE FROM attempts WHERE until < ?").bind(Date.now()).run();
-  return (row?.count ?? 1) <= WRITES_PER_HOUR;
+  return row?.count ?? 1;
 }
+async function peek(c: C, kind: string) {
+  const { key } = await attemptKey(c, kind);
+  return (await c.env.DB.prepare("SELECT count FROM attempts WHERE key = ?").bind(key).first<{ count: number }>())?.count ?? 0;
+}
+const allowWrite = async (c: C) => (await bump(c, "write")) <= WRITES_PER_HOUR;
 
 /* ---------- visitors ---------- */
 app.get("/", (c) => c.text("ShortPlanet stars"));
@@ -98,6 +115,8 @@ app.put("/stars/mine", async (c) => {
   token ??= randomId(24);
   const owner = await sha256(token);
   const existing = await c.env.DB.prepare("SELECT id FROM stars WHERE owner = ?").bind(owner).first<{ id: string }>();
+  const { results: near } = await c.env.DB.prepare("SELECT a, h FROM stars WHERE owner != ? AND hidden = 0").bind(owner).all<{ a: number; h: number }>();
+  if (near.some((s) => gap(a, h, s.a, s.h) < MIN_GAP)) return c.json({ error: "too_close" }, 409);
   // a star the owner hid stays hidden while its text is unchanged; new text has passed the checker and shows
   await c.env.DB.prepare(
     `INSERT INTO stars (id, owner, a, h, name, org, word, lit, hidden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
@@ -118,8 +137,12 @@ app.delete("/stars/mine", async (c) => {
 
 /* ---------- the owner ---------- */
 const admin = new Hono<{ Bindings: Env }>();
+// Wrong keys are counted per address; after ADMIN_FAILURES_PER_HOUR of them that address waits for the next hour,
+// even with the right key, so the key cannot be guessed by trying.
 admin.use("*", async (c, next) => {
-  if (!c.env.ADMIN_KEY || !(await sameSecret(c.req.header("X-Admin-Key") ?? "", c.env.ADMIN_KEY))) return c.json({ error: "unauthorized" }, 401);
+  if (!c.env.ADMIN_KEY) return c.json({ error: "unauthorized" }, 401);
+  if ((await peek(c, "admin")) >= ADMIN_FAILURES_PER_HOUR) return c.json({ error: "too_many" }, 429);
+  if (!(await sameSecret(c.req.header("X-Admin-Key") ?? "", c.env.ADMIN_KEY))) { await bump(c, "admin"); return c.json({ error: "unauthorized" }, 401); }
   await next();
 });
 admin.get("/stars", async (c) => {

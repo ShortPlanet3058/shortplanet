@@ -63,6 +63,22 @@ describe("visitors", () => {
     expect((await (await call("/stars")).json() as any).stars).toHaveLength(0);
   });
 
+  it("never lets a star sit on top of another", async () => {
+    await light({ a: 1, h: .5 });
+    const res = await light({ a: 1.005, h: .505 });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "too_close" });
+    expect((await light({ a: 1.2, h: .5 })).status).toBe(200);
+    expect((await (await call("/stars")).json() as any).stars).toHaveLength(2);
+  });
+
+  it("lets a visitor move their own star a little, and ignores stars the owner hid", async () => {
+    const { star, token } = await (await light({ a: 2, h: .5 })).json() as any;
+    expect((await light({ a: 2.005, h: .5 }, token)).status).toBe(200);
+    await call(`/admin/stars/${star.id}/hide`, { method: "POST", admin: "owner-key-for-tests" });
+    expect((await light({ a: 2.005, h: .5 })).status).toBe(200);
+  });
+
   it("rejects positions outside the sky", async () => {
     expect((await light({ a: 1, h: 3 })).status).toBe(400);
     expect((await light({ a: "x", h: .5 })).status).toBe(400);
@@ -94,6 +110,16 @@ describe("the owner", () => {
     expect((await call("/admin/stars")).status).toBe(401);
     expect((await call("/admin/stars", { admin: "wrong" })).status).toBe(401);
     expect((await call("/admin/stars", { admin: "owner-key-for-tests" })).status).toBe(200);
+  });
+
+  it("locks an address out for the hour after ten wrong keys, even with the right one", async () => {
+    for (let i = 0; i < 10; i++) expect((await call("/admin/stars", { admin: `wrong-${i}` })).status).toBe(401);
+    expect((await call("/admin/stars", { admin: "wrong-again" })).status).toBe(429);
+    expect((await call("/admin/stars", { admin: "owner-key-for-tests" })).status).toBe(429);
+  });
+
+  it("does not count the right key as a failure", async () => {
+    for (let i = 0; i < 12; i++) expect((await call("/admin/stars", { admin: "owner-key-for-tests" })).status).toBe(200);
   });
 
   it("hides a star; it stays hidden until its words change", async () => {
