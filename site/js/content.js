@@ -54,19 +54,19 @@ export const PLACES = [
     ask: "What if the world noticed every choice you made?",
     projects: [{ title: "The Endless Pantheon", tagline: "Become one of the Endless, and inherit everything that comes with the title.",
       body: "A Minecraft mod where players claim one of seven cosmic seats. Each comes with powers, a realm and duties, and neglecting them changes the whole server: sleep breaks, deaths stay unfinished, change stalls.",
-      meta: "Minecraft mod · Forge and Fabric · 3.3K downloads",
+      meta: "Minecraft mod · Forge and Fabric · 3.5K downloads",
       links: [["CurseForge", "https://www.curseforge.com/minecraft/mc-mods/the-endless-pantheon"]],
       mods: [
         // [name, kind, what it is (from the CurseForge summaries), downloads]
-        ["Legends of Slugterra: SlugCraft", "Modpack", "Built around the Slugterra mod: one world stacked from the sky down to the Nether, darker and more hostile the deeper you go.", "6.7K"],
-        ["Sandman Origin", "Origins data pack", "Play as the Sandman: walk through dreams, control sleep, shift between dream and nightmare, and change your size and sight.", "1.9K"],
-        ["Death Origin", "Origins data pack", "Play as Death of the Endless, a peaceful guide for souls, with gentle, non-violent powers.", "494"],
-        ["MHC: Beyond", "My Hero Craft add-on", "Control how quirks are born, strengthen All For One, balance NPC encounters and earn a hero or villain reputation.", "312"],
-        ["Everdawn: Shattered Realms", "Modpack", "A magical, dawn-lit world full of adventure and ancient mysteries.", "270"],
-        ["Mary Poppins: Beyond the Frame", "Mod", "Step into 26 of Minecraft's paintings, each a journey of its own, with a magic carpet bag to share with friends.", "47"],
-        ["Soul's Verdict: Heaven & Hell", "Mod", "What you do decides your afterlife: judgment in Heaven or Hell, a way back to life, or a new life as an angel, a demon or a fallen celestial.", "40"]
+        ["Legends of Slugterra: SlugCraft", "Modpack", "Built around the Slugterra mod: one world stacked from the sky down to the Nether, darker and more hostile the deeper you go.", "7K"],
+        ["Sandman Origin", "Origins data pack", "Play as the Sandman: walk through dreams, control sleep, shift between dream and nightmare, and change your size and sight.", "2K"],
+        ["Death Origin", "Origins data pack", "Play as Death of the Endless, a peaceful guide for souls, with gentle, non-violent powers.", "500"],
+        ["MHC: Beyond", "My Hero Craft add-on", "Control how quirks are born, strengthen All For One, balance NPC encounters and earn a hero or villain reputation.", "450"],
+        ["Everdawn: Shattered Realms", "Modpack", "A magical, dawn-lit world full of adventure and ancient mysteries.", "300"],
+        ["Mary Poppins: Beyond the Frame", "Mod", "Step into 26 of Minecraft's paintings, each a journey of its own, with a magic carpet bag to share with friends.", "60"],
+        ["Soul's Verdict: Heaven & Hell", "Mod", "What you do decides your afterlife: judgment in Heaven or Hell, a way back to life, or a new life as an angel, a demon or a fallen celestial.", "50"]
       ],
-      modsLink: ["All projects on CurseForge, about 13K downloads", CF] }] },
+      modsLink: ["All projects on CurseForge, about 14K downloads", CF] }] },
   { key: "bench", name: "Socrates' bench", short: "Socrates",
     see: "A column, a bench, an owl on the lamp, and a question that won't go away.",
     ask: "Why would anyone build an AI that refuses to give answers?",
@@ -208,7 +208,7 @@ export const FR = {
     ask: `Et si le monde remarquait chacun de vos choix${NB}?`,
     projects: [{ tagline: "Devenez l'un des Endless, et héritez de tout ce qui vient avec le titre.",
       body: `Un mod Minecraft où les joueurs revendiquent l'un des sept sièges cosmiques. Chacun apporte des pouvoirs, un royaume et des devoirs, et les négliger change tout le serveur${NB}: le sommeil se brise, les morts restent inachevées, le changement s'arrête.`,
-      meta: "Mod Minecraft · Forge et Fabric · 3,3 k téléchargements",
+      meta: "Mod Minecraft · Forge et Fabric · 3,5 k téléchargements",
       kinds: ["Modpack", "Data pack Origins", "Data pack Origins", "Extension de My Hero Craft", "Modpack", "Mod", "Mod"],
       mods: [
         `Construit autour du mod Slugterra${NB}: un seul monde empilé du ciel jusqu'au Nether, plus sombre et plus hostile à mesure que vous descendez.`,
@@ -219,8 +219,8 @@ export const FR = {
         "Entrez dans 26 tableaux de Minecraft, chacun avec son propre voyage, et partagez entre amis un sac en tapisserie magique.",
         `Vos actes décident de votre au-delà${NB}: jugement au Paradis ou en Enfer, retour à la vie, ou renaissance en ange, en démon ou en céleste déchu.`
       ],
-      dl: ["6,7 k", "1,9 k"],
-      modsLink: "Tous les projets sur CurseForge, environ 13 k téléchargements" }] },
+      dl: ["7 k", "2 k"],
+      modsLink: "Tous les projets sur CurseForge, environ 14 k téléchargements" }] },
   bench: { name: "Le banc de Socrate",
     see: "Une colonne, un banc, une chouette sur le lampadaire, et une question qui ne s'en va pas.",
     ask: `Pourquoi construire une IA qui refuse de donner des réponses${NB}?`,
